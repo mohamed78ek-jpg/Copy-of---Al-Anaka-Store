@@ -871,7 +871,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </td>
                       <td className="p-3 text-center">
                         <button
-                          onClick={() => onRemoveProduct(product.id)}
+                          onClick={() => {
+                            if (window.confirm(t('هل أنت متأكد من حذف هذا المنتج نهائياً؟', 'Are you sure you want to delete this product permanently?'))) {
+                              onRemoveProduct(product.id);
+                            }
+                          }}
                           className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                           title={t('حذف', 'Delete')}
                         >
