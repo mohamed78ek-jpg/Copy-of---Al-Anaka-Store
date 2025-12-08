@@ -2,12 +2,23 @@ import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
 import { Product } from '../types';
 import { APP_CURRENCY } from '../constants';
 
-let ai: GoogleGenAI;
+// Declare process manually to avoid TypeScript errors
+declare const process: {
+  env: {
+    API_KEY: string | undefined;
+  }
+};
+
+let ai: GoogleGenAI | null = null;
 
 const getAI = () => {
     if (!ai) {
-        // @ts-ignore
-        ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const apiKey = process.env.API_KEY;
+        if (!apiKey) {
+            console.warn("Gemini API Key is missing. AI features will be disabled.");
+            return null;
+        }
+        ai = new GoogleGenAI({ apiKey });
     }
     return ai;
 }
@@ -18,6 +29,12 @@ export interface ChatSession {
 
 export const createFashionAssistant = (products: Product[]): ChatSession => {
     const client = getAI();
+    
+    if (!client) {
+        return {
+            sendMessage: async () => "عذراً، خدمة المساعد الذكي غير متوفرة حالياً (API Key missing)."
+        };
+    }
     
     // Format product list for the system instruction
     const productContext = products.map(p => 
@@ -39,22 +56,29 @@ export const createFashionAssistant = (products: Product[]): ChatSession => {
     7. Brevity: Keep responses concise and easy to read on a mobile device.
     `;
 
-    const chat: Chat = client.chats.create({
-        model: 'gemini-2.5-flash',
-        config: {
-            systemInstruction,
-        },
-    });
+    try {
+        const chat: Chat = client.chats.create({
+            model: 'gemini-2.5-flash',
+            config: {
+                systemInstruction,
+            },
+        });
 
-    return {
-        sendMessage: async (msg: string) => {
-            try {
-                const response: GenerateContentResponse = await chat.sendMessage({ message: msg });
-                return response.text || "Sorry, I couldn't generate a response.";
-            } catch (error) {
-                console.error("AI Error:", error);
-                return "عذراً، واجهت مشكلة في الاتصال. هل يمكنك المحاولة مرة أخرى؟";
+        return {
+            sendMessage: async (msg: string) => {
+                try {
+                    const response: GenerateContentResponse = await chat.sendMessage({ message: msg });
+                    return response.text || "Sorry, I couldn't generate a response.";
+                } catch (error) {
+                    console.error("AI Error:", error);
+                    return "عذراً، واجهت مشكلة في الاتصال. هل يمكنك المحاولة مرة أخرى؟";
+                }
             }
-        }
-    };
+        };
+    } catch (e) {
+        console.error("Failed to create chat session", e);
+        return {
+            sendMessage: async () => "عذراً، حدث خطأ أثناء تهيئة المساعد الذكي."
+        };
+    }
 };

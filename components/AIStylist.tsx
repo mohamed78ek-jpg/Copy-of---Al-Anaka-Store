@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Sparkles, Loader2, MessageCircle } from 'lucide-react';
+import { X, Send, Sparkles, Loader2 } from 'lucide-react';
 import { ChatMessage, Product, Language } from '../types';
 import { createFashionAssistant, ChatSession } from '../services/geminiService';
 
@@ -21,14 +21,23 @@ export const AIStylist: React.FC<AIStylistProps> = ({ products, language }) => {
     // Initialize chat session when opened for the first time
     useEffect(() => {
         if (isOpen && !chatSessionRef.current) {
-            chatSessionRef.current = createFashionAssistant(products);
-            setMessages([{
-                role: 'model',
-                text: t(
-                    'أهلاً بك في بازار لوك! 🛍️ أنا مساعدك الذكي لتنسيق الأزياء. كيف يمكنني مساعدتك في اختيار إطلالتك اليوم؟ ✨', 
-                    'Welcome to Bazzr lok! 🛍️ I am your AI fashion assistant. How can I help you style your outfit today? ✨'
-                )
-            }]);
+            try {
+                chatSessionRef.current = createFashionAssistant(products);
+                setMessages([{
+                    role: 'model',
+                    text: t(
+                        'أهلاً بك في بازار لوك! 🛍️ أنا مساعدك الذكي لتنسيق الأزياء. كيف يمكنني مساعدتك في اختيار إطلالتك اليوم؟ ✨', 
+                        'Welcome to Bazzr lok! 🛍️ I am your AI fashion assistant. How can I help you style your outfit today? ✨'
+                    )
+                }]);
+            } catch (error) {
+                console.error("Failed to init AI:", error);
+                setMessages([{
+                    role: 'model',
+                    text: t('عذراً، المساعد الذكي غير متاح حالياً.', 'Sorry, AI assistant is currently unavailable.'),
+                    isError: true
+                }]);
+            }
         }
     }, [isOpen, products, language]);
 
@@ -42,7 +51,7 @@ export const AIStylist: React.FC<AIStylistProps> = ({ products, language }) => {
     }, [messages, isLoading]);
 
     const handleSend = async () => {
-        if (!input.trim() || !chatSessionRef.current) return;
+        if (!input.trim()) return;
 
         const userText = input;
         setInput('');
@@ -50,8 +59,12 @@ export const AIStylist: React.FC<AIStylistProps> = ({ products, language }) => {
         setIsLoading(true);
 
         try {
-            const responseText = await chatSessionRef.current.sendMessage(userText);
-            setMessages(prev => [...prev, { role: 'model', text: responseText }]);
+            if (chatSessionRef.current) {
+                const responseText = await chatSessionRef.current.sendMessage(userText);
+                setMessages(prev => [...prev, { role: 'model', text: responseText }]);
+            } else {
+                 setMessages(prev => [...prev, { role: 'model', text: t('حدث خطأ في الاتصال.', 'Connection error.') }]);
+            }
         } catch (error) {
             setMessages(prev => [...prev, { role: 'model', text: t('حدث خطأ، يرجى المحاولة لاحقاً.', 'An error occurred, please try again.'), isError: true }]);
         } finally {
