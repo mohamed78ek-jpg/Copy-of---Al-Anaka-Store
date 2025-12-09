@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, LogOut, Package, ShieldCheck, ChevronDown, Megaphone, ShoppingBag, Phone, MapPin, Mail, User, FileText, X, List, PlusCircle, Image as ImageIcon, MonitorPlay, Settings, Edit, Printer, Upload, MessageSquare, BarChart3, DollarSign, Clock, LayoutGrid, Activity, CheckCircle2, ArrowUpRight, Download, Info, Save } from 'lucide-react';
+import { Plus, Trash2, LogOut, Package, ShieldCheck, ChevronDown, Megaphone, ShoppingBag, Phone, MapPin, Mail, User, FileText, X, List, PlusCircle, Image as ImageIcon, MonitorPlay, Settings, Edit, Printer, Upload, MessageSquare, BarChart3, DollarSign, Clock, LayoutGrid, Activity, CheckCircle2, ArrowUpRight } from 'lucide-react';
 import { Product, Language, Order, PopupConfig, SiteConfig, OrderStatus, Report } from '../types';
 import { APP_CURRENCY } from '../constants';
 
@@ -18,7 +18,6 @@ interface AdminDashboardProps {
   siteConfig: SiteConfig;
   onUpdateSiteConfig: (config: SiteConfig) => void;
   onUpdateOrderStatus: (orderId: string, newStatus: OrderStatus) => void;
-  onImportData: (data: any) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
@@ -35,8 +34,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onUpdatePopupConfig,
   siteConfig,
   onUpdateSiteConfig,
-  onUpdateOrderStatus,
-  onImportData
+  onUpdateOrderStatus
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
@@ -74,8 +72,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     totalProducts: products.length
   };
 
-  // Predefined Categories
-  const CATEGORIES = ['رجال', 'أطفال', 'أحذية', 'اكسسوارات'];
+  // Predefined Categories - Added 'نساء'
+  const CATEGORIES = ['رجال', 'نساء', 'أطفال', 'أحذية', 'اكسسوارات'];
 
   const getStatusLabel = (status: OrderStatus) => {
     switch (status) {
@@ -173,49 +171,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const handleExportData = () => {
-    const data = {
-      products,
-      orders,
-      reports,
-      bannerText,
-      popupConfig,
-      siteConfig,
-      exportedAt: new Date().toISOString(),
-      version: '1.0'
-    };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `bazzr-lok-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImportDataInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const json = JSON.parse(event.target?.result as string);
-        if (window.confirm(t('سيتم استبدال جميع البيانات الحالية بالبيانات المستوردة. هل أنت متأكد؟', 'All current data will be replaced by imported data. Are you sure?'))) {
-          onImportData(json);
-        }
-      } catch (err) {
-        alert(t('حدث خطأ أثناء قراءة الملف', 'Error reading file'));
-      }
-    };
-    reader.readAsText(file);
-    // Reset input
-    e.target.value = '';
   };
 
   const handlePrintOrder = (order: Order) => {
@@ -857,50 +812,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         )}
 
-        {/* REPORTS TAB */}
-        {activeTab === 'reports' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <MessageSquare className="text-emerald-600" />
-              {t('رسائل البلاغات', 'Report Messages')}
-            </h2>
-            {reports.length === 0 ? (
-              <div className="text-center py-12 text-gray-400 bg-white rounded-3xl border border-gray-100">
-                <Mail size={48} className="mx-auto mb-4 opacity-50" />
-                <p>{t('لا توجد رسائل جديدة', 'No new messages')}</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {reports.map((report) => (
-                  <div key={report.id} className="bg-white border border-gray-200 rounded-3xl p-6 hover:border-emerald-500 transition-colors">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="font-bold text-lg text-gray-900 mb-1">{report.subject}</h3>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                           <span className="flex items-center gap-1"><Mail size={14}/> {report.email}</span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => {
-                          if (window.confirm(t('هل أنت متأكد من حذف هذه الرسالة؟', 'Are you sure you want to delete this message?'))) {
-                            onRemoveReport(report.id);
-                          }
-                        }}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                    <div className="bg-gray-50 p-4 rounded-xl text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">
-                      {report.message}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
         {/* ADD PRODUCT TAB */}
         {activeTab === 'add_product' && (
           <form onSubmit={handleAddSubmit} className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -1129,50 +1040,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <Settings className="text-emerald-600" />
               {t('الإعدادات العامة', 'General Settings')}
             </h2>
-
-            {/* Data Management Section */}
-            <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-              <h3 className="font-bold text-lg mb-4 text-gray-800 flex items-center gap-2">
-                <Save size={20} className="text-blue-500"/>
-                {t('إدارة البيانات (استيراد/تصدير)', 'Data Management (Import/Export)')}
-              </h3>
-              
-              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-6">
-                <div className="flex gap-2 text-blue-700 mb-2">
-                  <Info size={20} className="shrink-0" />
-                  <p className="text-sm font-bold">{t('تنبيه هام:', 'Important Note:')}</p>
-                </div>
-                <p className="text-sm text-blue-600 leading-relaxed">
-                  {t(
-                    'يتم حفظ البيانات حالياً على هذا الجهاز فقط (Local Storage). لكي تظهر التعديلات والمنتجات على أجهزة أخرى، قم بتصدير البيانات من هنا ثم استيراد الملف في الجهاز الآخر.',
-                    'Data is currently saved locally on this device only (Local Storage). To see changes on other devices, export data from here and import the file on the other device.'
-                  )}
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <button
-                  onClick={handleExportData}
-                  className="w-full py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 hover:border-emerald-500 hover:text-emerald-600 transition-all flex items-center justify-center gap-2"
-                >
-                  <Download size={18} />
-                  {t('تصدير نسخة احتياطية', 'Export Backup')}
-                </button>
-
-                <div className="relative">
-                   <button className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-lg flex items-center justify-center gap-2 pointer-events-none">
-                    <Upload size={18} />
-                    {t('استيراد بيانات', 'Import Data')}
-                  </button>
-                  <input 
-                    type="file" 
-                    accept=".json"
-                    onChange={handleImportDataInput}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                </div>
-              </div>
-            </div>
 
             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
               <h3 className="font-bold text-lg mb-4 text-gray-800">{t('تغيير كلمة المرور', 'Change Password')}</h3>

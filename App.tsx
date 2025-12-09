@@ -225,17 +225,6 @@ function App() {
     showNotification(t('تم تحديث حالة الطلب', 'Order status updated'));
   };
 
-  const handleImportData = (data: any) => {
-    if (data.products && Array.isArray(data.products)) setProducts(data.products);
-    if (data.orders && Array.isArray(data.orders)) setOrders(data.orders);
-    if (data.reports && Array.isArray(data.reports)) setReports(data.reports);
-    if (data.bannerText) setBannerText(data.bannerText);
-    if (data.popupConfig) setPopupConfig(data.popupConfig);
-    if (data.siteConfig) setSiteConfig(data.siteConfig);
-    
-    showNotification(t('تم استيراد البيانات وتحديث المتجر بنجاح', 'Data imported and store updated successfully'));
-  };
-
   const renderContent = () => {
     switch (currentView) {
       case ViewState.ADMIN:
@@ -255,7 +244,6 @@ function App() {
             siteConfig={siteConfig}
             onUpdateSiteConfig={setSiteConfig}
             onUpdateOrderStatus={handleUpdateOrderStatus}
-            onImportData={handleImportData}
           />
         );
       case ViewState.CART:
