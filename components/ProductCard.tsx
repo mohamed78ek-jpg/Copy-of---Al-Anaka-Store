@@ -23,9 +23,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
   };
 
   return (
-    <div className="group relative flex flex-col bg-white border border-black rounded-[2rem] p-3 shadow-sm hover:shadow-md transition-all duration-300 h-full">
+    <div className="group relative flex flex-col bg-white border border-black rounded-[2rem] p-2 shadow-sm hover:shadow-md transition-all duration-300 h-full">
       
-      {/* Image Container - Reduced height to aspect-square */}
+      {/* Image Container - Aspect Square */}
       <div className="relative aspect-square rounded-[1.5rem] overflow-hidden mb-2 bg-gray-50">
         <img
           src={product.image}
@@ -42,19 +42,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
       
       {/* Content */}
       <div className="flex-1 flex flex-col items-center text-center px-1 pb-2">
-        <h3 className="text-base font-bold text-gray-900 line-clamp-1 mb-2 font-tajawal">
+        <h3 className="text-sm font-bold text-gray-900 line-clamp-1 mb-2 font-tajawal">
           {product.name}
         </h3>
 
         {/* Size Selection - Direct Display */}
         {product.sizes && product.sizes.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-1.5 mb-2 w-full">
+          <div className="flex flex-wrap justify-center gap-1 mb-2 w-full">
             {product.sizes.map((size) => (
               <button
                 key={size}
                 onClick={() => setSelectedSize(size)}
                 className={`
-                  min-w-[28px] h-[28px] px-1 flex items-center justify-center text-[10px] font-bold rounded-lg border transition-all duration-200
+                  min-w-[24px] h-[24px] px-1 flex items-center justify-center text-[9px] font-bold rounded-md border transition-all duration-200
                   ${selectedSize === size 
                     ? 'bg-gray-900 text-white border-gray-900 shadow-sm transform scale-105' 
                     : 'bg-white text-gray-500 border-gray-200 hover:border-emerald-500 hover:text-emerald-600'}
@@ -68,20 +68,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
         
         <div className="mt-auto mb-3 flex flex-col items-center justify-center gap-0">
           {originalPrice && (
-            <span className="text-gray-400 line-through text-xs font-bold font-sans opacity-60">
+            <span className="text-gray-400 line-through text-[10px] font-bold font-sans opacity-60">
               {APP_CURRENCY} {originalPrice}.00
             </span>
           )}
-          <span className={`text-xl font-black font-sans tracking-tight ${hasDiscount ? 'text-red-600' : 'text-gray-900'}`}>
+          <span className={`text-lg font-black font-sans tracking-tight ${hasDiscount ? 'text-red-600' : 'text-gray-900'}`}>
             {APP_CURRENCY} {currentPrice}.00
           </span>
         </div>
 
         {/* Action Area */}
-        <div className="w-full h-[40px]">
+        <div className="w-full h-[36px]">
             <button
               onClick={handleAddToCart}
-              className="w-full h-full bg-[#22c55e] hover:bg-emerald-600 text-white text-sm font-bold rounded-full transition-colors shadow-sm active:scale-95 font-tajawal flex items-center justify-center"
+              className="w-full h-full bg-[#22c55e] hover:bg-emerald-600 text-white text-xs font-bold rounded-full transition-colors shadow-sm active:scale-95 font-tajawal flex items-center justify-center"
             >
               أضف إلى السلة
             </button>

@@ -303,8 +303,8 @@ function App() {
               ))}
             </div>
 
-            {/* Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Grid - Reduced gap from 6 to 3 to make cards wider */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               
               {filteredProducts.map(product => (
                 <ProductCard 
