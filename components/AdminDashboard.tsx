@@ -893,6 +893,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">{t('وصف المنتج', 'Product Description')}</label>
+                <textarea
+                  rows={4}
+                  value={newProduct.description || ''}
+                  onChange={e => setNewProduct({...newProduct, description: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-gray-50"
+                  placeholder={t('أضف وصفاً تفصيلياً للمنتج...', 'Add detailed product description...')}
+                ></textarea>
+              </div>
+
+              <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">{t('صورة المنتج', 'Product Image')}</label>
                 <div className="flex gap-2">
                   <input
