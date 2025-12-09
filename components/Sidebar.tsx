@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, X, Globe, ChevronRight, ChevronLeft, Lock, Package } from 'lucide-react';
+import { Home, X, Globe, ChevronRight, ChevronLeft, Lock, Package, AlertTriangle } from 'lucide-react';
 import { ViewState, Language } from '../types';
 
 interface SidebarProps {
@@ -81,6 +81,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <span className="font-medium text-lg">
               {language === 'ar' ? 'تتبع طلباتي' : 'Track Order'}
+            </span>
+            {isRTL ? <ChevronLeft className="mr-auto text-gray-300" size={16} /> : <ChevronRight className="ml-auto text-gray-300" size={16} />}
+          </button>
+
+          {/* Report Problem Link */}
+          <button
+            onClick={() => {
+              onChangeView(ViewState.REPORT_PROBLEM);
+              onClose();
+            }}
+            className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-all group text-gray-700 hover:text-red-600"
+          >
+            <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-red-100 group-hover:text-red-600 transition-colors">
+              <AlertTriangle size={20} />
+            </div>
+            <span className="font-medium text-lg">
+              {language === 'ar' ? 'إبلاغ عن مشكلة' : 'Report Problem'}
             </span>
             {isRTL ? <ChevronLeft className="mr-auto text-gray-300" size={16} /> : <ChevronRight className="ml-auto text-gray-300" size={16} />}
           </button>
