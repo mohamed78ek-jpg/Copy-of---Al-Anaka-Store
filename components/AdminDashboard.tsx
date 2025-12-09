@@ -621,8 +621,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {activeTab === 'stats' && (
         <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
           
-          {/* Welcome Section */}
+          {/* Welcome Section - Fixed RTL Order */}
           <div className="flex justify-between items-end mb-8 px-2">
+            
+            {/* Welcome Text (Start in RTL) */}
+            <div>
+              <h2 className="text-2xl font-black text-gray-900 flex items-center gap-2">
+                👋 {t('مرحباً، محمد', 'Hello, Mohamed')}
+              </h2>
+              <p className="text-gray-400 text-sm mt-1">{t('نظرة عامة على المتجر', 'Store Overview')}</p>
+            </div>
+
+            {/* Logout Button (End in RTL) */}
             <div>
               <button 
                 onClick={() => setIsAuthenticated(false)}
@@ -630,12 +640,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               >
                 {t('تسجيل خروج', 'Logout')}
               </button>
-            </div>
-            <div className="text-left" dir="ltr">
-              <h2 className="text-2xl font-black text-gray-900 flex items-center justify-end gap-2">
-                👋 {t('مرحباً، محمد', 'Hello, Mohamed')}
-              </h2>
-              <p className="text-gray-400 text-sm mt-1 text-right">{t('نظرة عامة على المتجر', 'Store Overview')}</p>
             </div>
           </div>
 
@@ -665,7 +669,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <h3 className="text-gray-500 font-bold text-sm">{t('إجمالي المبيعات', 'Total Sales')}</h3>
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-4xl font-black text-gray-900 mb-1" dir="ltr">{stats.totalRevenue} <span className="text-lg text-gray-400">dh</span></span>
+                <span className="text-4xl font-black text-gray-900 mb-1" dir="ltr">{stats.totalRevenue} <span className="text-lg text-gray-400">{APP_CURRENCY}</span></span>
                 <div className="flex items-center gap-1 text-emerald-600 text-xs font-bold">
                   <ArrowUpRight size={14} />
                   <span>{t('12% هذا الأسبوع+', '+12% this week')}</span>
@@ -676,20 +680,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           {/* Store Activity Section */}
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-6 text-right">{t('نشاط المتجر', 'Store Activity')}</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-6">{t('نشاط المتجر', 'Store Activity')}</h3>
             
             <div className="space-y-6">
-              <div className="flex items-center justify-end gap-3">
+              <div className="flex items-center justify-between">
                 <span className="text-gray-500 text-sm">{t('المتجر مفتوح ويستقبل الطلبات', 'Store is open and accepting orders')}</span>
                 <div className="w-2.5 h-2.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
               </div>
               
-              <div className="flex items-center justify-end gap-3">
+              <div className="flex items-center justify-between">
                 <span className="text-gray-500 text-sm">{t('تم تحديث المخزون منذ 2 ساعة', 'Inventory updated 2 hours ago')}</span>
                 <div className="w-2.5 h-2.5 bg-black rounded-full"></div>
               </div>
 
-              <div className="flex items-center justify-end gap-3">
+              <div className="flex items-center justify-between">
                 <span className="text-gray-500 text-sm">{t('عدد الزوار اليوم: 124', 'Visitors today: 124')}</span>
                  <div className="w-2.5 h-2.5 bg-gray-300 rounded-full"></div>
               </div>
