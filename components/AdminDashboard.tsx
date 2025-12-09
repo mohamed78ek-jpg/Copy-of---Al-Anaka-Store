@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, LogOut, Package, ShieldCheck, ChevronDown, Megaphone, ShoppingBag, Phone, MapPin, Mail, User, FileText, X, List, PlusCircle, Image as ImageIcon, MonitorPlay, Settings, Edit, Printer, Upload, MessageSquare, BarChart3, DollarSign, Clock, LayoutGrid, Activity, CheckCircle2, ArrowUpRight } from 'lucide-react';
+import { Plus, Trash2, LogOut, Package, ShieldCheck, ChevronDown, Megaphone, ShoppingBag, Phone, MapPin, Mail, User, FileText, X, List, PlusCircle, Image as ImageIcon, MonitorPlay, Settings, Edit, Printer, Upload, MessageSquare, BarChart3, DollarSign, Clock, LayoutGrid, Activity, CheckCircle2, ArrowUpRight, Download, Info, Save } from 'lucide-react';
 import { Product, Language, Order, PopupConfig, SiteConfig, OrderStatus, Report } from '../types';
 import { APP_CURRENCY } from '../constants';
 
@@ -18,6 +18,7 @@ interface AdminDashboardProps {
   siteConfig: SiteConfig;
   onUpdateSiteConfig: (config: SiteConfig) => void;
   onUpdateOrderStatus: (orderId: string, newStatus: OrderStatus) => void;
+  onImportData: (data: any) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
@@ -34,7 +35,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onUpdatePopupConfig,
   siteConfig,
   onUpdateSiteConfig,
-  onUpdateOrderStatus
+  onUpdateOrderStatus,
+  onImportData
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
@@ -171,6 +173,49 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleExportData = () => {
+    const data = {
+      products,
+      orders,
+      reports,
+      bannerText,
+      popupConfig,
+      siteConfig,
+      exportedAt: new Date().toISOString(),
+      version: '1.0'
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `bazzr-lok-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportDataInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        if (window.confirm(t('سيتم استبدال جميع البيانات الحالية بالبيانات المستوردة. هل أنت متأكد؟', 'All current data will be replaced by imported data. Are you sure?'))) {
+          onImportData(json);
+        }
+      } catch (err) {
+        alert(t('حدث خطأ أثناء قراءة الملف', 'Error reading file'));
+      }
+    };
+    reader.readAsText(file);
+    // Reset input
+    e.target.value = '';
   };
 
   const handlePrintOrder = (order: Order) => {
@@ -1084,6 +1129,50 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <Settings className="text-emerald-600" />
               {t('الإعدادات العامة', 'General Settings')}
             </h2>
+
+            {/* Data Management Section */}
+            <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+              <h3 className="font-bold text-lg mb-4 text-gray-800 flex items-center gap-2">
+                <Save size={20} className="text-blue-500"/>
+                {t('إدارة البيانات (استيراد/تصدير)', 'Data Management (Import/Export)')}
+              </h3>
+              
+              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-6">
+                <div className="flex gap-2 text-blue-700 mb-2">
+                  <Info size={20} className="shrink-0" />
+                  <p className="text-sm font-bold">{t('تنبيه هام:', 'Important Note:')}</p>
+                </div>
+                <p className="text-sm text-blue-600 leading-relaxed">
+                  {t(
+                    'يتم حفظ البيانات حالياً على هذا الجهاز فقط (Local Storage). لكي تظهر التعديلات والمنتجات على أجهزة أخرى، قم بتصدير البيانات من هنا ثم استيراد الملف في الجهاز الآخر.',
+                    'Data is currently saved locally on this device only (Local Storage). To see changes on other devices, export data from here and import the file on the other device.'
+                  )}
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <button
+                  onClick={handleExportData}
+                  className="w-full py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 hover:border-emerald-500 hover:text-emerald-600 transition-all flex items-center justify-center gap-2"
+                >
+                  <Download size={18} />
+                  {t('تصدير نسخة احتياطية', 'Export Backup')}
+                </button>
+
+                <div className="relative">
+                   <button className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-lg flex items-center justify-center gap-2 pointer-events-none">
+                    <Upload size={18} />
+                    {t('استيراد بيانات', 'Import Data')}
+                  </button>
+                  <input 
+                    type="file" 
+                    accept=".json"
+                    onChange={handleImportDataInput}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
 
             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
               <h3 className="font-bold text-lg mb-4 text-gray-800">{t('تغيير كلمة المرور', 'Change Password')}</h3>
