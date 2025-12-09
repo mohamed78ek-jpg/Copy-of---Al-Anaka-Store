@@ -40,6 +40,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState(''); // Login input
   const [adminPassword, setAdminPassword] = useState('Mohamed2003'); // Actual password state
+  const [currentPasswordInput, setCurrentPasswordInput] = useState(''); // Verification input for change
   const [newPasswordInput, setNewPasswordInput] = useState(''); // For changing password
   const [error, setError] = useState('');
   
@@ -99,12 +100,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (currentPasswordInput !== adminPassword) {
+      alert(t('كلمة المرور الحالية غير صحيحة', 'Current password is incorrect'));
+      return;
+    }
+
     if (newPasswordInput.length < 4) {
       alert(t('كلمة المرور يجب أن تكون 4 أحرف على الأقل', 'Password must be at least 4 characters'));
       return;
     }
+    
     setAdminPassword(newPasswordInput);
     setNewPasswordInput('');
+    setCurrentPasswordInput('');
     alert(t('تم تغيير كلمة المرور بنجاح', 'Password changed successfully'));
   };
 
@@ -1028,7 +1037,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   />
                   <ImageIcon className="mx-auto text-gray-400 mb-2" size={32} />
                   <span className="text-sm text-gray-500 font-medium">
-                    {t('اضغط لرفع صورة', 'Click to upload image')}
+                    {t('اضغط لرفع صورة', 'Click to upload image from device')}
                   </span>
                 </div>
               </div>
@@ -1048,6 +1057,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
               <h3 className="font-bold text-lg mb-4 text-gray-800">{t('تغيير كلمة المرور', 'Change Password')}</h3>
               <form onSubmit={handleChangePassword} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">{t('كلمة المرور الحالية', 'Current Password')}</label>
+                  <input
+                    type="password"
+                    value={currentPasswordInput}
+                    onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
+                    placeholder="****"
+                    dir="ltr"
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">{t('كلمة المرور الجديدة', 'New Password')}</label>
                   <input
