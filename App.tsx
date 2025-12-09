@@ -14,18 +14,61 @@ import { Search, Mail, Banknote } from 'lucide-react';
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.HOME);
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
+  
+  // Initialize state from localStorage with fallbacks
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) { return []; }
+  });
+
+  const [orders, setOrders] = useState<Order[]>(() => {
+    try {
+      const saved = localStorage.getItem('orders');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) { return []; }
+  });
+
+  const [products, setProducts] = useState<Product[]>(() => {
+    try {
+      const saved = localStorage.getItem('products');
+      return saved ? JSON.parse(saved) : PRODUCTS;
+    } catch (e) { return PRODUCTS; }
+  });
+
+  const [bannerText, setBannerText] = useState(() => {
+    return localStorage.getItem('bannerText') || 'أهلاً بكم في بازار لوك - خصومات تصل إلى 50% على التشكيلة الجديدة! 🌟 شحن مجاني للطلبات فوق 300 د.م';
+  });
+
+  const [popupConfig, setPopupConfig] = useState<PopupConfig>(() => {
+    try {
+      const saved = localStorage.getItem('popupConfig');
+      return saved ? JSON.parse(saved) : { isActive: false, image: '' };
+    } catch (e) { return { isActive: false, image: '' }; }
+  });
+
+  const [siteConfig, setSiteConfig] = useState<SiteConfig>(() => {
+    try {
+      const saved = localStorage.getItem('siteConfig');
+      return saved ? JSON.parse(saved) : { enableTrackOrder: true };
+    } catch (e) { return { enableTrackOrder: true }; }
+  });
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [language, setLanguage] = useState<Language>('ar');
-  const [products, setProducts] = useState<Product[]>(PRODUCTS);
-  const [bannerText, setBannerText] = useState('أهلاً بكم في بازار لوك - خصومات تصل إلى 50% على التشكيلة الجديدة! 🌟 شحن مجاني للطلبات فوق 300 د.م');
-  const [popupConfig, setPopupConfig] = useState<PopupConfig>({ isActive: false, image: '' });
-  const [siteConfig, setSiteConfig] = useState<SiteConfig>({ enableTrackOrder: true });
   const [showAdPopup, setShowAdPopup] = useState(false);
+
+  // Persistence Effects
+  useEffect(() => { localStorage.setItem('cart', JSON.stringify(cart)); }, [cart]);
+  useEffect(() => { localStorage.setItem('orders', JSON.stringify(orders)); }, [orders]);
+  useEffect(() => { localStorage.setItem('products', JSON.stringify(products)); }, [products]);
+  useEffect(() => { localStorage.setItem('bannerText', bannerText); }, [bannerText]);
+  useEffect(() => { localStorage.setItem('popupConfig', JSON.stringify(popupConfig)); }, [popupConfig]);
+  useEffect(() => { localStorage.setItem('siteConfig', JSON.stringify(siteConfig)); }, [siteConfig]);
 
   // Handle Direction and Language
   useEffect(() => {
