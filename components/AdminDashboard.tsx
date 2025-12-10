@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, Package, ShieldCheck, ChevronDown, Megaphone, ShoppingBag, Phone, User, X, List, PlusCircle, Image as ImageIcon, MonitorPlay, Settings, Edit, Printer, Upload, MessageSquare, DollarSign, LayoutGrid, ArrowUpRight, Server, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Trash2, Package, ShieldCheck, ChevronDown, Megaphone, ShoppingBag, Phone, User, X, List, PlusCircle, Image as ImageIcon, MonitorPlay, Settings, Edit, Printer, Upload, MessageSquare, DollarSign, LayoutGrid, ArrowUpRight, Server, RefreshCw, Database, CloudLightning, Link } from 'lucide-react';
 import { Product, Language, Order, PopupConfig, SiteConfig, OrderStatus, Report } from '../types';
 import { APP_CURRENCY } from '../constants';
+import { mockServer } from '../services/mockServer';
 
 interface AdminDashboardProps {
   products: Product[];
@@ -46,6 +47,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [newPasswordInput, setNewPasswordInput] = useState(''); // For changing password
   const [error, setError] = useState('');
   
+  // Database Connection State
+  const [dbUrl, setDbUrl] = useState('');
+  const [dbKey, setDbKey] = useState('');
+  const [isCloudConnected, setIsCloudConnected] = useState(false);
+  
   const [activeTab, setActiveTab] = useState<'stats' | 'orders' | 'add_product' | 'product_list' | 'banner' | 'popup' | 'settings' | 'reports'>('stats');
   
   // State for Order Management Modal
@@ -63,6 +69,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   });
 
   const t = (ar: string, en: string) => language === 'ar' ? ar : en;
+
+  // Check connection status on load
+  useEffect(() => {
+    setIsCloudConnected(mockServer.isConnectedToCloud());
+  }, []);
 
   // Statistics Calculation
   const stats = {
@@ -127,6 +138,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setNewPasswordInput('');
     setCurrentPasswordInput('');
     alert(t('تم تغيير كلمة المرور بنجاح', 'Password changed successfully'));
+  };
+
+  const handleConnectDB = (e: React.FormEvent) => {
+    e.preventDefault();
+    if(dbUrl && dbKey) {
+        mockServer.saveConnection(dbUrl, dbKey);
+        // Page reloads in service
+    }
+  };
+
+  const handleDisconnectDB = () => {
+    if(window.confirm(t('هل أنت متأكد من قطع الاتصال؟ سيتم العودة للتخزين المحلي.', 'Are you sure? This will revert to local storage.'))) {
+        mockServer.disconnectExternalDB();
+    }
   };
 
   const handleAddSubmit = (e: React.FormEvent) => {
@@ -685,17 +710,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <h3 className="text-lg font-bold text-gray-900 mb-6">{t('حالة النظام', 'System Status')}</h3>
             
             <div className="space-y-6">
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-xl border border-green-100">
+              <div className={`flex items-center justify-between p-3 rounded-xl border ${isCloudConnected ? 'bg-purple-50 border-purple-100' : 'bg-green-50 border-green-100'}`}>
                 <div className="flex items-center gap-3">
-                   <div className="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center text-green-700">
+                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isCloudConnected ? 'bg-purple-200 text-purple-700' : 'bg-green-200 text-green-700'}`}>
                       <Server size={18} />
                    </div>
                    <div>
-                      <h4 className="font-bold text-gray-800 text-sm">{t('السيرفر متصل', 'Server Online')}</h4>
-                      <p className="text-green-600 text-xs">{t('يعمل بكفاءة عالية', 'Running smoothly')}</p>
+                      <h4 className="font-bold text-gray-800 text-sm">
+                        {isCloudConnected ? t('متصل بقاعدة بيانات خارجية', 'Connected to External DB') : t('السيرفر المحلي متصل', 'Local Server Online')}
+                      </h4>
+                      <p className={`${isCloudConnected ? 'text-purple-600' : 'text-green-600'} text-xs`}>
+                        {isCloudConnected ? t('Supabase Cloud Sync', 'Supabase Cloud Sync') : t('تخزين محلي (المتصفح)', 'Local Browser Storage')}
+                      </p>
                    </div>
                 </div>
-                <div className="w-2.5 h-2.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)] animate-pulse"></div>
+                <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${isCloudConnected ? 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'}`}></div>
               </div>
               
               <div className="flex items-center justify-between">
@@ -1051,6 +1080,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {t('الإعدادات العامة', 'General Settings')}
             </h2>
 
+            {/* Admin Password Change */}
             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
               <h3 className="font-bold text-lg mb-4 text-gray-800">{t('تغيير كلمة المرور', 'Change Password')}</h3>
               <form onSubmit={handleChangePassword} className="space-y-4">
@@ -1083,6 +1113,68 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   {t('حفظ', 'Save')}
                 </button>
               </form>
+            </div>
+
+            {/* External Database Connection */}
+            <div className="bg-purple-50 p-6 rounded-3xl border border-purple-100 shadow-sm">
+               <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-purple-600 shadow-sm">
+                    <Database size={20} />
+                  </div>
+                  <h3 className="font-bold text-lg text-purple-900">{t('قاعدة بيانات خارجية', 'External Database')}</h3>
+               </div>
+               
+               <p className="text-sm text-purple-700/80 mb-6 leading-relaxed">
+                 {t(
+                   'قم بربط المتجر بقاعدة بيانات Supabase لحفظ البيانات سحابياً ومشاركتها بين الأجهزة. إذا لم تكن متصلاً، سيتم استخدام التخزين المحلي.',
+                   'Connect store to Supabase DB to sync data across devices. If disconnected, local storage is used.'
+                 )}
+               </p>
+
+               {!isCloudConnected ? (
+                 <form onSubmit={handleConnectDB} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-bold text-purple-800 mb-2">Supabase URL</label>
+                      <input
+                        type="text"
+                        value={dbUrl}
+                        onChange={(e) => setDbUrl(e.target.value)}
+                        className="w-full px-4 py-3 border border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none bg-white"
+                        placeholder="https://xyz.supabase.co"
+                        dir="ltr"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-purple-800 mb-2">Supabase Anon Key</label>
+                      <input
+                        type="password"
+                        value={dbKey}
+                        onChange={(e) => setDbKey(e.target.value)}
+                        className="w-full px-4 py-3 border border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none bg-white"
+                        placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI..."
+                        dir="ltr"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-colors shadow-lg flex items-center justify-center gap-2"
+                    >
+                      <Link size={18} />
+                      {t('ربط قاعدة البيانات', 'Connect Database')}
+                    </button>
+                 </form>
+               ) : (
+                 <div className="bg-white/50 p-4 rounded-xl border border-purple-200 text-center">
+                    <CloudLightning className="mx-auto text-purple-600 mb-2" size={32} />
+                    <p className="font-bold text-purple-900 mb-4">{t('متصل بنجاح بالسحابة', 'Connected to Cloud Successfully')}</p>
+                    <button
+                      onClick={handleDisconnectDB}
+                      className="text-red-500 text-sm font-bold underline hover:text-red-700"
+                    >
+                      {t('قطع الاتصال والعودة للمحلي', 'Disconnect & Revert to Local')}
+                    </button>
+                 </div>
+               )}
             </div>
 
             {/* Reset Data Section */}
